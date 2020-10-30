@@ -1,0 +1,51 @@
+server:
+  port: 8888
+
+spring:
+  shardingsphere:
+    props:
+      sql:
+        show: true
+    # 配置数据源
+    datasource:
+      names: ds0,ds1,ds2 # 不要带下划线
+      ds0:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://127.0.0.1:3307/sharding_test?characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai
+        username: root
+        password: 123456
+      ds1:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://127.0.0.1:3308/sharding_test?characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai
+        username: root
+        password: 123456
+      ds2:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://127.0.0.1:3309/sharding_test?characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai
+        username: root
+        password: 123456
+    sharding:
+      tables:
+        t_sharding:
+          # 配置 t_sharding 表规则
+          actual-data-nodes: ds$->{0..2}.t_sharding_20$->{19..21}
+          # 分片(分库分表)策略: 标准分片策略、复合分片策略、Hint分片策略、行分片策略、不分片策略
+          # 配置分库策略
+          database-strategy:
+            inline:
+              sharding-column: column2
+              algorithmExpression: ds${column2 % 3}
+          # 配置分表策略
+          table-strategy:
+            standard:
+              sharding-column: column_date
+              precise-algorithm-class-name: com.gyh.sharding.CustomShardingAlgorithm
+              range-algorithm-class-name: com.gyh.sharding.CustomShardingAlgorithm
+
+#指定mybatis-config.xml的位置
+mybatis:
+  config-location: classpath:mybatis-config.xml
+  mapper-locations: classpath:mapper/*Mapper.xml
